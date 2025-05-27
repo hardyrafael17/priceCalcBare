@@ -79,6 +79,31 @@ export const headCoverageOptions = {
     topBackOneSide: { nameKey: "hc_topBackOneSide", multiplier: 0.80 },
 };
 
+// Hair characteristics - affecting pricing with 1.0 ratio for now
+export const hairKindOptions = {
+    afro: { nameKey: "hairKind_afro", priceFactor: 1.0, timeFactor: 1.0 },
+    semiAfro: { nameKey: "hairKind_semiAfro", priceFactor: 1.0, timeFactor: 1.0 },
+    curly: { nameKey: "hairKind_curly", priceFactor: 1.0, timeFactor: 1.0 },
+    semiCurly: { nameKey: "hairKind_semiCurly", priceFactor: 1.0, timeFactor: 1.0 },
+    wavy: { nameKey: "hairKind_wavy", priceFactor: 1.0, timeFactor: 1.0 },
+    straight: { nameKey: "hairKind_straight", priceFactor: 1.0, timeFactor: 1.0 }
+};
+
+export const hairDensityOptions = {
+    veryLow: { nameKey: "hairDensity_veryLow", priceFactor: 1.0, timeFactor: 1.0 },
+    low: { nameKey: "hairDensity_low", priceFactor: 1.0, timeFactor: 1.0 },
+    medium: { nameKey: "hairDensity_medium", priceFactor: 1.0, timeFactor: 1.0 },
+    high: { nameKey: "hairDensity_high", priceFactor: 1.0, timeFactor: 1.0 },
+    veryHigh: { nameKey: "hairDensity_veryHigh", priceFactor: 1.0, timeFactor: 1.0 }
+};
+
+export const hairLengthOptions = {
+    extremelyShort: { nameKey: "hairLength_extremelyShort", inches: "<2", priceFactor: 1.0, timeFactor: 1.0 },
+    short: { nameKey: "hairLength_short", inches: "2-4", priceFactor: 1.0, timeFactor: 1.0 },
+    normalForBraids: { nameKey: "hairLength_normalForBraids", inches: ">4", priceFactor: 1.0, timeFactor: 1.0 },
+    extraLarge: { nameKey: "hairLength_extraLarge", inches: ">10", priceFactor: 1.0, timeFactor: 1.0 }
+};
+
 export const extensionOptions = {
     little: { nameKey: "ext_little", cost: 10, timeAdded: 0.75 },
     normal: { nameKey: "ext_normal", cost: 20, timeAdded: 1.25 },

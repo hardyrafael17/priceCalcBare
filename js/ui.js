@@ -1,5 +1,5 @@
 // UI management and DOM manipulation
-import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions } from './data.js';
+import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, hairKindOptions, hairDensityOptions, hairLengthOptions } from './data.js';
 import { translate, setLanguage, updateAllText } from './translations.js';
 import { populateThemeDropdown } from './theme.js';
 import { calculatePrice } from './calculator.js';
@@ -110,6 +110,9 @@ export function updateCornrowOptions() {
 
 export function setupFormListeners() {
     const braidStyleSelect = document.getElementById('braidStyle');
+    const hairKindSelect = document.getElementById('hairKind');
+    const hairDensitySelect = document.getElementById('hairDensity');
+    const hairLengthSelect = document.getElementById('hairLength');
     const headCoverageSelect = document.getElementById('headCoverage');
     const cornrowRowsInput = document.getElementById('cornrowRows');
     const divisionSizeSelect = document.getElementById('divisionSize');
@@ -127,6 +130,10 @@ export function setupFormListeners() {
         updateCornrowOptions();
         calculatePrice();
     });
+
+    hairKindSelect.addEventListener('change', calculatePrice);
+    hairDensitySelect.addEventListener('change', calculatePrice);
+    hairLengthSelect.addEventListener('change', calculatePrice);
 
     headCoverageSelect.addEventListener('change', () => {
         updateCornrowOptions();
@@ -161,6 +168,9 @@ export function setupFormListeners() {
 
 export function initializeFormOptions() {
     const braidStyleSelect = document.getElementById('braidStyle');
+    const hairKindSelect = document.getElementById('hairKind');
+    const hairDensitySelect = document.getElementById('hairDensity');
+    const hairLengthSelect = document.getElementById('hairLength');
     const headCoverageSelect = document.getElementById('headCoverage');
     const divisionSizeSelect = document.getElementById('divisionSize');
     const extensionAmountSelect = document.getElementById('extensionAmount');
@@ -170,13 +180,19 @@ export function initializeFormOptions() {
 
     // Populate all dropdowns
     populateSelectWithOptions(braidStyleSelect, braidStylesData);
+    populateSelectWithOptions(hairKindSelect, hairKindOptions);
+    populateSelectWithOptions(hairDensitySelect, hairDensityOptions);
+    populateSelectWithOptions(hairLengthSelect, hairLengthOptions);
     populateSelectWithOptions(headCoverageSelect, headCoverageOptions);
     populateSelectWithOptions(divisionSizeSelect, braidStylesData.boxBraids.divisionOptions);
     populateSelectWithOptions(extensionAmountSelect, extensionOptions);
     populateSelectWithOptions(braidTailLengthSelect, braidTailLengthOptions);
     
-    // Set default values: cornrows, full head, 6 rows, no extensions, 8 inch tail
+    // Set default values: cornrows, wavy hair, medium density, normal length, full head, no extensions, 8 inch tail
     braidStyleSelect.value = 'cornrows';
+    hairKindSelect.value = 'wavy';
+    hairDensitySelect.value = 'medium';
+    hairLengthSelect.value = 'normalForBraids';
     headCoverageSelect.value = 'full';
     needsExtensionsCheckbox.checked = false;
     extensionAmountSelect.value = 'normal';
@@ -198,12 +214,18 @@ export function initializeFormOptions() {
 
 function updateAllFormOptions() {
     const braidStyleSelect = document.getElementById('braidStyle');
+    const hairKindSelect = document.getElementById('hairKind');
+    const hairDensitySelect = document.getElementById('hairDensity');
+    const hairLengthSelect = document.getElementById('hairLength');
     const headCoverageSelect = document.getElementById('headCoverage');
     const divisionSizeSelect = document.getElementById('divisionSize');
     const extensionAmountSelect = document.getElementById('extensionAmount');
     const braidTailLengthSelect = document.getElementById('braidTailLength');
 
     populateSelectWithOptions(braidStyleSelect, braidStylesData);
+    populateSelectWithOptions(hairKindSelect, hairKindOptions);
+    populateSelectWithOptions(hairDensitySelect, hairDensityOptions);
+    populateSelectWithOptions(hairLengthSelect, hairLengthOptions);
     populateSelectWithOptions(headCoverageSelect, headCoverageOptions);
     populateSelectWithOptions(divisionSizeSelect, braidStylesData.boxBraids.divisionOptions);
     populateSelectWithOptions(extensionAmountSelect, extensionOptions);

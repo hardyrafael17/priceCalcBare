@@ -1,9 +1,12 @@
 // Price calculation logic
-import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts } from './data.js';
+import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, hairKindOptions, hairDensityOptions, hairLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts } from './data.js';
 import { translate } from './translations.js';
 
 export function calculatePrice() {
     const braidStyleSelect = document.getElementById('braidStyle');
+    const hairKindSelect = document.getElementById('hairKind');
+    const hairDensitySelect = document.getElementById('hairDensity');
+    const hairLengthSelect = document.getElementById('hairLength');
     const headCoverageSelect = document.getElementById('headCoverage');
     const cornrowRowsInput = document.getElementById('cornrowRows');
     const divisionSizeSelect = document.getElementById('divisionSize');
@@ -26,6 +29,9 @@ export function calculatePrice() {
     const selectedStyleKey = braidStyleSelect.value;
     const styleData = braidStylesData[selectedStyleKey];
     const headCoverage = headCoverageOptions[headCoverageSelect.value];
+    const hairKind = hairKindOptions[hairKindSelect.value];
+    const hairDensity = hairDensityOptions[hairDensitySelect.value];
+    const hairLength = hairLengthOptions[hairLengthSelect.value];
 
     let baseLabor = 0;
     let baseTime = 0;
@@ -54,6 +60,10 @@ export function calculatePrice() {
     // Apply head coverage adjustment
     let adjustedLabor = baseLabor * headCoverage.multiplier;
     let adjustedTime = baseTime * headCoverage.multiplier;
+
+    // Apply hair characteristics adjustments (currently set to 1.0 ratio as requested)
+    adjustedLabor = adjustedLabor * hairKind.priceFactor * hairDensity.priceFactor * hairLength.priceFactor;
+    adjustedTime = adjustedTime * hairKind.timeFactor * hairDensity.timeFactor * hairLength.timeFactor;
 
     if (headCoverage.multiplier !== 1.0) {
         breakdownHtml += `<p>${translate('bd_headCoverage')} (${translate(headCoverage.nameKey)} - ${headCoverage.multiplier*100}%): ${translate('bd_labor')} €${adjustedLabor.toFixed(2)}, ${adjustedTime.toFixed(1)}h</p>`;
