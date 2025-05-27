@@ -35,8 +35,8 @@ export const translations = {
         hc_full: "Full Head",
         hc_topOnly: "Top Only (approx 40%)",
         hc_topAndBack: "Top and Back (approx 70%)",
-        hc_mohawk: "Mohawk Area (approx 30%)",
-        hc_topBackOneSide: "Top, Back, and One Side (approx 85%)",
+        hc_mohawk: "Mohawk Area (approx 50%)",
+        hc_topBackOneSide: "Top, Back, and One Side (approx 80%)",
         // Division Sizes
         div_small: "Small (<1.5cm side)",
         div_medium: "Medium (1.5-2.5cm side)",
@@ -98,8 +98,8 @@ export const translations = {
         hc_full: "Cabeza Completa",
         hc_topOnly: "Solo Arriba (aprox 40%)",
         hc_topAndBack: "Arriba y Detrás (aprox 70%)",
-        hc_mohawk: "Zona Mohawk (aprox 30%)",
-        hc_topBackOneSide: "Arriba, Detrás y Un Lado (aprox 85%)",
+        hc_mohawk: "Zona Mohawk (aprox 50%)",
+        hc_topBackOneSide: "Arriba, Detrás y Un Lado (aprox 80%)",
         // Division Sizes
         div_small: "Pequeño (<1.5cm lado)",
         div_medium: "Mediano (1.5-2.5cm lado)",

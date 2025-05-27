@@ -73,6 +73,36 @@ export function updateOptionsVisibility() {
         !needsExtensionsCheckbox.checked);
 }
 
+export function updateCornrowOptions() {
+    const headCoverageSelect = document.getElementById('headCoverage');
+    const cornrowRowsSelect = document.getElementById('cornrowRows');
+    
+    if (!headCoverageSelect.value) return;
+    
+    const headCoverage = headCoverageOptions[headCoverageSelect.value];
+    const baseWidthCm = 31.75; // 12.5 inches in cm
+    const adjustedWidthCm = baseWidthCm * headCoverage.multiplier;
+    
+    const currentValue = cornrowRowsSelect.value;
+    cornrowRowsSelect.innerHTML = '';
+    
+    // Create options for 2 to 6 rows
+    for (let rows = 2; rows <= 16; rows++) {
+        const widthPerRow = adjustedWidthCm / rows;
+        const option = document.createElement('option');
+        option.value = rows;
+        option.textContent = `${rows} (approximately ${widthPerRow.toFixed(1)} cm wide)`;
+        cornrowRowsSelect.appendChild(option);
+    }
+    
+    // Restore previous value if it exists, otherwise default to 6
+    if (cornrowRowsSelect.querySelector(`option[value="${currentValue}"]`)) {
+        cornrowRowsSelect.value = currentValue;
+    } else {
+        cornrowRowsSelect.value = '6';
+    }
+}
+
 export function setupFormListeners() {
     const braidStyleSelect = document.getElementById('braidStyle');
     const headCoverageSelect = document.getElementById('headCoverage');
@@ -88,11 +118,15 @@ export function setupFormListeners() {
     // Form element listeners
     braidStyleSelect.addEventListener('change', () => {
         updateOptionsVisibility();
+        updateCornrowOptions();
         calculatePrice();
     });
 
-    headCoverageSelect.addEventListener('change', calculatePrice);
-    cornrowRowsInput.addEventListener('input', calculatePrice);
+    headCoverageSelect.addEventListener('change', () => {
+        updateCornrowOptions();
+        calculatePrice();
+    });
+    cornrowRowsInput.addEventListener('change', calculatePrice);
     divisionSizeSelect.addEventListener('change', calculatePrice);
 
     mixPercentageInput.addEventListener('input', () => {
@@ -123,6 +157,8 @@ export function initializeFormOptions() {
     const headCoverageSelect = document.getElementById('headCoverage');
     const divisionSizeSelect = document.getElementById('divisionSize');
     const extensionAmountSelect = document.getElementById('extensionAmount');
+    const cornrowRowsSelect = document.getElementById('cornrowRows');
+    const needsExtensionsCheckbox = document.getElementById('needsExtensions');
 
     // Populate all dropdowns
     populateSelectWithOptions(braidStyleSelect, braidStylesData);
@@ -130,8 +166,20 @@ export function initializeFormOptions() {
     populateSelectWithOptions(divisionSizeSelect, braidStylesData.boxBraids.divisionOptions);
     populateSelectWithOptions(extensionAmountSelect, extensionOptions);
     
-    // Set default extension amount
+    // Set default values: cornrows, full head, 6 rows, no extensions
+    braidStyleSelect.value = 'cornrows';
+    headCoverageSelect.value = 'full';
+    needsExtensionsCheckbox.checked = false;
     extensionAmountSelect.value = 'normal';
+    
+    // Initialize cornrow options after head coverage is set
+    updateCornrowOptions();
+    
+    // Set cornrows to 6 rows after options are populated
+    cornrowRowsSelect.value = '6';
+    
+    // Update visibility based on default selections
+    updateOptionsVisibility();
     
     // Populate theme and language dropdowns
     populateThemeDropdown();
@@ -148,6 +196,7 @@ function updateAllFormOptions() {
     populateSelectWithOptions(headCoverageSelect, headCoverageOptions);
     populateSelectWithOptions(divisionSizeSelect, braidStylesData.boxBraids.divisionOptions);
     populateSelectWithOptions(extensionAmountSelect, extensionOptions);
+    updateCornrowOptions();
     populateThemeDropdown();
     populateLanguageDropdown();
 }

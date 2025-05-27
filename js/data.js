@@ -72,8 +72,8 @@ export const headCoverageOptions = {
     full: { nameKey: "hc_full", multiplier: 1.0 },
     topOnly: { nameKey: "hc_topOnly", multiplier: 0.4 },
     topAndBack: { nameKey: "hc_topAndBack", multiplier: 0.7 },
-    mohawk: { nameKey: "hc_mohawk", multiplier: 0.3 },
-    topBackOneSide: { nameKey: "hc_topBackOneSide", multiplier: 0.85 },
+    mohawk: { nameKey: "hc_mohawk", multiplier: 0.5 },
+    topBackOneSide: { nameKey: "hc_topBackOneSide", multiplier: 0.80 },
 };
 
 export const extensionOptions = {
