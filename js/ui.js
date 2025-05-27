@@ -1,5 +1,5 @@
 // UI management and DOM manipulation
-import { braidStylesData, headCoverageOptions, extensionOptions } from './data.js';
+import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions } from './data.js';
 import { translate, setLanguage, updateAllText } from './translations.js';
 import { populateThemeDropdown } from './theme.js';
 import { calculatePrice } from './calculator.js';
@@ -46,6 +46,7 @@ export function updateOptionsVisibility() {
     const divisionOptionsContainer = document.getElementById('divisionOptionsContainer');
     const mixBraidsOptionsContainer = document.getElementById('mixBraidsOptionsContainer');
     const curlAddonContainer = document.getElementById('curlAddonContainer');
+    const braidTailLengthContainer = document.getElementById('braidTailLengthContainer');
     const extensionAmountContainer = document.getElementById('extensionAmountContainer');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
     
@@ -65,6 +66,10 @@ export function updateOptionsVisibility() {
     // Show curl add-on only for styles that support it
     curlAddonContainer.classList.toggle('hidden', 
         !style || !style.hasCurlAddon);
+    
+    // Show braid tail length only for styles that support it
+    braidTailLengthContainer.classList.toggle('hidden', 
+        !style || !style.hasTailLength);
     
     // Hide mix braids options (no longer used)
     mixBraidsOptionsContainer.classList.add('hidden');
@@ -91,7 +96,7 @@ export function updateCornrowOptions() {
         const widthPerRow = adjustedWidthCm / rows;
         const option = document.createElement('option');
         option.value = rows;
-        option.textContent = `${rows} (approximately ${widthPerRow.toFixed(1)} cm wide)`;
+        option.textContent = `${rows} (${translate('approximately')} ${widthPerRow.toFixed(1)} ${translate('cmWide')})`;
         cornrowRowsSelect.appendChild(option);
     }
     
@@ -108,6 +113,7 @@ export function setupFormListeners() {
     const headCoverageSelect = document.getElementById('headCoverage');
     const cornrowRowsInput = document.getElementById('cornrowRows');
     const divisionSizeSelect = document.getElementById('divisionSize');
+    const braidTailLengthSelect = document.getElementById('braidTailLength');
     const mixPercentageInput = document.getElementById('mixPercentage');
     const mixPercentageValueSpan = document.getElementById('mixPercentageValue');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
@@ -128,6 +134,7 @@ export function setupFormListeners() {
     });
     cornrowRowsInput.addEventListener('change', calculatePrice);
     divisionSizeSelect.addEventListener('change', calculatePrice);
+    braidTailLengthSelect.addEventListener('change', calculatePrice);
 
     mixPercentageInput.addEventListener('input', () => {
         mixPercentageValueSpan.textContent = `${mixPercentageInput.value}%`;
@@ -157,6 +164,7 @@ export function initializeFormOptions() {
     const headCoverageSelect = document.getElementById('headCoverage');
     const divisionSizeSelect = document.getElementById('divisionSize');
     const extensionAmountSelect = document.getElementById('extensionAmount');
+    const braidTailLengthSelect = document.getElementById('braidTailLength');
     const cornrowRowsSelect = document.getElementById('cornrowRows');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
 
@@ -165,12 +173,14 @@ export function initializeFormOptions() {
     populateSelectWithOptions(headCoverageSelect, headCoverageOptions);
     populateSelectWithOptions(divisionSizeSelect, braidStylesData.boxBraids.divisionOptions);
     populateSelectWithOptions(extensionAmountSelect, extensionOptions);
+    populateSelectWithOptions(braidTailLengthSelect, braidTailLengthOptions);
     
-    // Set default values: cornrows, full head, 6 rows, no extensions
+    // Set default values: cornrows, full head, 6 rows, no extensions, 8 inch tail
     braidStyleSelect.value = 'cornrows';
     headCoverageSelect.value = 'full';
     needsExtensionsCheckbox.checked = false;
     extensionAmountSelect.value = 'normal';
+    braidTailLengthSelect.value = '8'; // Default to 8 inches (shoulders)
     
     // Initialize cornrow options after head coverage is set
     updateCornrowOptions();
@@ -191,11 +201,13 @@ function updateAllFormOptions() {
     const headCoverageSelect = document.getElementById('headCoverage');
     const divisionSizeSelect = document.getElementById('divisionSize');
     const extensionAmountSelect = document.getElementById('extensionAmount');
+    const braidTailLengthSelect = document.getElementById('braidTailLength');
 
     populateSelectWithOptions(braidStyleSelect, braidStylesData);
     populateSelectWithOptions(headCoverageSelect, headCoverageOptions);
     populateSelectWithOptions(divisionSizeSelect, braidStylesData.boxBraids.divisionOptions);
     populateSelectWithOptions(extensionAmountSelect, extensionOptions);
+    populateSelectWithOptions(braidTailLengthSelect, braidTailLengthOptions);
     updateCornrowOptions();
     populateThemeDropdown();
     populateLanguageDropdown();

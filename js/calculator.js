@@ -1,5 +1,5 @@
 // Price calculation logic
-import { braidStylesData, headCoverageOptions, extensionOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts } from './data.js';
+import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts } from './data.js';
 import { translate } from './translations.js';
 
 export function calculatePrice() {
@@ -7,6 +7,7 @@ export function calculatePrice() {
     const headCoverageSelect = document.getElementById('headCoverage');
     const cornrowRowsInput = document.getElementById('cornrowRows');
     const divisionSizeSelect = document.getElementById('divisionSize');
+    const braidTailLengthSelect = document.getElementById('braidTailLength');
     const mixPercentageInput = document.getElementById('mixPercentage');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
     const extensionAmountSelect = document.getElementById('extensionAmount');
@@ -58,6 +59,16 @@ export function calculatePrice() {
         breakdownHtml += `<p>${translate('bd_headCoverage')} (${translate(headCoverage.nameKey)} - ${headCoverage.multiplier*100}%): ${translate('bd_labor')} €${adjustedLabor.toFixed(2)}, ${adjustedTime.toFixed(1)}h</p>`;
     } else {
         breakdownHtml += `<p>${translate('bd_styleLaborFull')}: €${adjustedLabor.toFixed(2)}, ${adjustedTime.toFixed(1)}h</p>`;
+    }
+
+    // Apply braid tail length adjustment for styles that support it
+    if (styleData.hasTailLength && braidTailLengthSelect.value) {
+        const tailLengthResult = calculateTailLengthCost(adjustedLabor, adjustedTime, braidTailLengthSelect);
+        adjustedLabor = tailLengthResult.labor;
+        adjustedTime = tailLengthResult.time;
+        if (tailLengthResult.breakdown) {
+            breakdownHtml += tailLengthResult.breakdown;
+        }
     }
 
     // Calculate extensions
@@ -157,4 +168,26 @@ function calculateExtensionsCost(extensionAmountSelect) {
     const breakdown = `<p>${translate('bd_extensions')} (${translate(selectedExtension.nameKey)}): €${materialCosts.toFixed(2)} (${translate('bd_material')}) + €${laborCosts.toFixed(2)} (${translate('bd_labor')}), ${timeAdded.toFixed(1)}h ${translate('bd_added')}</p>`;
 
     return { materialCosts, timeAdded, laborCosts, breakdown };
+}
+
+function calculateTailLengthCost(currentLabor, currentTime, braidTailLengthSelect) {
+    const tailLengthKey = braidTailLengthSelect.value;
+    const tailLength = braidTailLengthOptions[tailLengthKey];
+    
+    if (!tailLength || tailLength.inches === 0) {
+        return { labor: currentLabor, time: currentTime, breakdown: '' };
+    }
+
+    const adjustedLabor = currentLabor * tailLength.priceFactor;
+    const adjustedTime = currentTime * tailLength.timeFactor;
+    
+    const priceDiff = adjustedLabor - currentLabor;
+    const timeDiff = adjustedTime - currentTime;
+    
+    let breakdown = '';
+    if (priceDiff > 0.01 || timeDiff > 0.01) {
+        breakdown = `<p>${translate('bd_braidTailLength')} (${translate(tailLength.nameKey)}): +€${priceDiff.toFixed(2)}, +${timeDiff.toFixed(1)}h</p>`;
+    }
+
+    return { labor: adjustedLabor, time: adjustedTime, breakdown };
 }
