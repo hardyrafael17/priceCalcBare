@@ -1,6 +1,7 @@
 // Price calculation logic
 import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, cornrowsTailLengthOptions, hairKindOptions, hairDensityOptions, hairLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts, cornrowsConfig } from './data.js';
 import { translate } from './translations.js';
+import { calculateCornrowsTailCost, cornrowsBraidingConfig } from './utils.js';
 
 // Helper function to convert decimal hours to HH:MM format
 function formatTimeToHHMM(decimalHours) {
@@ -147,16 +148,38 @@ function calculateCornrowsCost(styleData, cornrowRowsInput) {
         breakdown += `<p>${translate('bd_shortHairSurcharge')}: €${cornrowsConfig.shortHairSurcharge.toFixed(2)}</p>`;
     }
     
-    // Apply tail length factors (using cornrows-specific tail length options)
+    // Apply tail length pricing using sophisticated girth-based algorithm
     const tailLengthKey = braidTailLengthSelect.value;
-    if (tailLengthKey && cornrowsTailLengthOptions[tailLengthKey]) {
-        const tailLength = cornrowsTailLengthOptions[tailLengthKey];
-        if (tailLength.priceFactor !== 1.0 || tailLength.timeFactor !== 1.0) {
-            const priceIncrease = labor * (tailLength.priceFactor - 1);
-            const timeIncrease = time * (tailLength.timeFactor - 1);
-            labor *= tailLength.priceFactor;
-            time *= tailLength.timeFactor;
-            breakdown += `<p>${translate('bd_braidTailLength')} (${translate(tailLength.nameKey)}): +€${priceIncrease.toFixed(2)}, +${formatTimeToHHMM(timeIncrease)}</p>`;
+    if (tailLengthKey && tailLengthKey !== 'none') {
+        const tailLengthInches = parseInt(tailLengthKey) || 0;
+        
+        if (tailLengthInches > 0) {
+            // Determine girth based on hair characteristics and style
+            let girthType = 'normal';
+            if (rows >= 8) {
+                girthType = 'thin';  // More rows = thinner braids
+            } else if (rows <= 3) {
+                girthType = 'thick'; // Fewer rows = thicker braids
+            }
+            
+            // Determine complexity based on tail length and row count
+            let complexityType = 'normal';
+            if (tailLengthInches >= 24 || rows >= 10) {
+                complexityType = 'detailed';
+            } else if (tailLengthInches >= 36 || rows >= 15) {
+                complexityType = 'expert';
+            } else if (tailLengthInches <= 6 && rows <= 4) {
+                complexityType = 'simple';
+            }
+            
+            // Use sophisticated girth-based algorithm for tail pricing
+            const tailResult = calculateCornrowsTailCost(rows, tailLengthInches, girthType, complexityType);
+            
+            if (tailResult.price > 0) {
+                labor += tailResult.price;
+                time += tailResult.time;
+                breakdown += `<p>${translate('bd_braidTailLength')} (${tailLengthInches}" ${girthType}/${complexityType}): +€${tailResult.price.toFixed(2)}, +${formatTimeToHHMM(tailResult.time)}</p>`;
+            }
         }
     }
     
