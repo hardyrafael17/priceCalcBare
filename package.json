@@ -1,0 +1,21 @@
+{
+  "name": "braid-cost-estimator",
+  "version": "1.0.0",
+  "description": "A modular web application for estimating braid service costs with multi-language support",
+  "main": "index.html",
+  "scripts": {
+    "serve": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "braid",
+    "cost-estimator",
+    "pricing",
+    "beauty",
+    "salon",
+    "multilingual"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "module"
+}
