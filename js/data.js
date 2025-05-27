@@ -1,13 +1,11 @@
 // Data definitions for braid styles, options, and pricing
 export const braidStylesData = {
-    cornrows: { 
-        nameKey: "style_cornrows", 
-        hasRows: true, 
+    ropeBraid: { 
+        nameKey: "style_ropeBraid", 
+        hasRows: false, 
         hasDivisions: false, 
-        baseLaborPrice: 12.75, 
-        laborPricePerRow: 5, 
-        baseTime: 1.5, 
-        timePerRow: 0.25 
+        baseLaborPrice: 25, 
+        baseTime: 2 
     },
     boxBraids: {
         nameKey: "style_boxBraids", 
@@ -21,24 +19,52 @@ export const braidStylesData = {
             large: { nameKey: "div_large", priceFactor: 0.75, timeFactor: 0.75 },
         },
     },
+    cornrows: { 
+        nameKey: "style_cornrows", 
+        hasRows: true, 
+        hasDivisions: false, 
+        baseLaborPrice: 12.75, 
+        laborPricePerRow: 5, 
+        baseTime: 1.5, 
+        timePerRow: 0.25 
+    },
+    fulaniBraids: {
+        nameKey: "style_fulaniBraids", 
+        hasRows: false, 
+        hasDivisions: false, 
+        baseLaborPrice: 85, 
+        baseTime: 6
+    },
+    updoCornrows: { 
+        nameKey: "style_updoCornrows", 
+        hasRows: true, 
+        hasDivisions: false, 
+        baseLaborPrice: 35, 
+        laborPricePerRow: 3, 
+        baseTime: 3, 
+        timePerRow: 0.2 
+    },
+    crochetBraids: {
+        nameKey: "style_crochetBraids", 
+        hasRows: false, 
+        hasDivisions: false, 
+        baseLaborPrice: 45, 
+        baseTime: 3.5
+    },
     bohemianBraids: {
         nameKey: "style_bohemianBraids", 
         hasRows: false, 
         hasDivisions: true, 
+        hasCurlAddon: true,
         baseLaborPriceMediumFull: 80, 
-        baseTimeMediumFull: 5.5,
+        baseTimeMediumFull: 6,
+        curlAddonPrice: 15,
+        curlAddonTime: 1,
         divisionOptions: {
             small: { nameKey: "div_small", priceFactor: 1.6, timeFactor: 1.6 },
             medium: { nameKey: "div_medium", priceFactor: 1.0, timeFactor: 1.0 },
             large: { nameKey: "div_large", priceFactor: 0.75, timeFactor: 0.75 },
         },
-        curlyHairMaterialCost: 15, 
-        curlyHairTimeAdded: 0.75,
-    },
-    mixBraids: { 
-        nameKey: "style_mixBraids", 
-        hasRows: true, 
-        hasDivisions: true 
     }
 };
 

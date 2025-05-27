@@ -45,6 +45,7 @@ export function updateOptionsVisibility() {
     const cornrowsOptionsContainer = document.getElementById('cornrowsOptionsContainer');
     const divisionOptionsContainer = document.getElementById('divisionOptionsContainer');
     const mixBraidsOptionsContainer = document.getElementById('mixBraidsOptionsContainer');
+    const curlAddonContainer = document.getElementById('curlAddonContainer');
     const extensionAmountContainer = document.getElementById('extensionAmountContainer');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
     
@@ -53,17 +54,20 @@ export function updateOptionsVisibility() {
     
     const style = braidStylesData[selectedStyleKey];
 
+    // Show cornrows options only for styles that have rows
     cornrowsOptionsContainer.classList.toggle('hidden', 
-        !style || (!style.hasRows && selectedStyleKey !== 'mixBraids'));
+        !style || !style.hasRows);
+    
+    // Show division options only for styles that have divisions
     divisionOptionsContainer.classList.toggle('hidden', 
-        !style || (!style.hasDivisions && selectedStyleKey !== 'mixBraids'));
-    mixBraidsOptionsContainer.classList.toggle('hidden', 
-        selectedStyleKey !== 'mixBraids');
-
-    if (selectedStyleKey === 'mixBraids') {
-        cornrowsOptionsContainer.classList.remove('hidden');
-        divisionOptionsContainer.classList.remove('hidden');
-    }
+        !style || !style.hasDivisions);
+    
+    // Show curl add-on only for styles that support it
+    curlAddonContainer.classList.toggle('hidden', 
+        !style || !style.hasCurlAddon);
+    
+    // Hide mix braids options (no longer used)
+    mixBraidsOptionsContainer.classList.add('hidden');
     
     extensionAmountContainer.classList.toggle('hidden', 
         !needsExtensionsCheckbox.checked);
@@ -78,6 +82,7 @@ export function setupFormListeners() {
     const mixPercentageValueSpan = document.getElementById('mixPercentageValue');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
     const extensionAmountSelect = document.getElementById('extensionAmount');
+    const needsCurlsCheckbox = document.getElementById('needsCurls');
     const languageSelect = document.getElementById('languageSelect');
 
     // Form element listeners
@@ -99,6 +104,8 @@ export function setupFormListeners() {
         updateOptionsVisibility();
         calculatePrice();
     });
+
+    needsCurlsCheckbox.addEventListener('change', calculatePrice);
 
     extensionAmountSelect.addEventListener('change', calculatePrice);
 

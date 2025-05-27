@@ -10,6 +10,7 @@ export function calculatePrice() {
     const mixPercentageInput = document.getElementById('mixPercentage');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
     const extensionAmountSelect = document.getElementById('extensionAmount');
+    const needsCurlsCheckbox = document.getElementById('needsCurls');
     const estimatedPriceSpan = document.getElementById('estimatedPrice');
     const estimatedTimeSpan = document.getElementById('estimatedTime');
     const priceBreakdownDiv = document.getElementById('priceBreakdown');
@@ -31,22 +32,22 @@ export function calculatePrice() {
     let breakdownHtml = "";
 
     // Calculate base costs based on style
-    if (selectedStyleKey === 'cornrows') {
+    if (selectedStyleKey === 'cornrows' || selectedStyleKey === 'updoCornrows') {
         const result = calculateCornrowsCost(styleData, cornrowRowsInput);
         baseLabor = result.labor;
         baseTime = result.time;
         breakdownHtml += result.breakdown;
     } else if (selectedStyleKey === 'boxBraids' || selectedStyleKey === 'bohemianBraids') {
-        const result = calculateStandardBraidsCost(selectedStyleKey, styleData, divisionSizeSelect);
+        const result = calculateStandardBraidsCost(selectedStyleKey, styleData, divisionSizeSelect, needsCurlsCheckbox);
         baseLabor = result.labor;
         baseTime = result.time;
         materialCosts += result.materialCosts;
         breakdownHtml += result.breakdown;
-    } else if (selectedStyleKey === 'mixBraids') {
-        const result = calculateMixBraidsCost(mixPercentageInput, cornrowRowsInput, divisionSizeSelect);
-        baseLabor = result.labor;
-        baseTime = result.time;
-        breakdownHtml += result.breakdown;
+    } else {
+        // Simple styles without rows or divisions (ropeBraid, fulaniBraids, crochetBraids)
+        baseLabor = styleData.baseLaborPrice;
+        baseTime = styleData.baseTime;
+        breakdownHtml += `<p>${translate(styleData.nameKey)}: €${baseLabor.toFixed(2)} (${baseTime.toFixed(1)}h)</p>`;
     }
 
     // Apply head coverage adjustment
@@ -89,27 +90,31 @@ function calculateCornrowsCost(styleData, cornrowRowsInput) {
     return { labor, time, breakdown };
 }
 
-function calculateStandardBraidsCost(selectedStyleKey, styleData, divisionSizeSelect) {
+function calculateStandardBraidsCost(selectedStyleKey, styleData, divisionSizeSelect, needsCurlsCheckbox) {
     const division = styleData.divisionOptions[divisionSizeSelect.value];
     const labor = styleData.baseLaborPriceMediumFull * division.priceFactor;
     const time = styleData.baseTimeMediumFull * division.timeFactor;
     let materialCosts = 0;
     let breakdown = `<p>${translate(styleData.nameKey)} (${translate('bd_division')}: ${translate(division.nameKey)}): €${labor.toFixed(2)} (${time.toFixed(1)}h)</p>`;
     
-    if (selectedStyleKey === 'bohemianBraids') {
-        materialCosts += styleData.curlyHairMaterialCost;
-        const curlLabor = styleData.curlyHairTimeAdded * HOURLY_RATE_FOR_EXTENSIONS_LABOR;
-        breakdown += `<p>${translate('bd_bohemianCurls')}: €${styleData.curlyHairMaterialCost.toFixed(2)} (${translate('bd_material')}) + €${curlLabor.toFixed(2)} (${translate('bd_labor')}), ${styleData.curlyHairTimeAdded.toFixed(1)}h</p>`;
-        
-        return { 
-            labor: labor + curlLabor, 
-            time: time + styleData.curlyHairTimeAdded, 
-            materialCosts, 
-            breakdown 
-        };
+    let totalLabor = labor;
+    let totalTime = time;
+
+    // Add curl add-on if selected for Bohemian Braids
+    if (selectedStyleKey === 'bohemianBraids' && needsCurlsCheckbox && needsCurlsCheckbox.checked) {
+        const curlPrice = styleData.curlAddonPrice;
+        const curlTime = styleData.curlAddonTime;
+        totalLabor += curlPrice;
+        totalTime += curlTime;
+        breakdown += `<p>${translate('bd_bohemianCurls')}: €${curlPrice.toFixed(2)} (${curlTime.toFixed(1)}h)</p>`;
     }
-    
-    return { labor, time, materialCosts, breakdown };
+
+    return { 
+        labor: totalLabor, 
+        time: totalTime, 
+        materialCosts, 
+        breakdown 
+    };
 }
 
 function calculateMixBraidsCost(mixPercentageInput, cornrowRowsInput, divisionSizeSelect) {
