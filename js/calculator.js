@@ -1,6 +1,22 @@
 // Price calculation logic
-import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, hairKindOptions, hairDensityOptions, hairLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts } from './data.js';
+import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, cornrowsTailLengthOptions, hairKindOptions, hairDensityOptions, hairLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts, cornrowsConfig } from './data.js';
 import { translate } from './translations.js';
+
+// Helper function to convert decimal hours to HH:MM format
+function formatTimeToHHMM(decimalHours) {
+    if (decimalHours === 0) return "0:00";
+    
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    
+    // Handle cases where rounding might give 60 minutes
+    if (minutes === 60) {
+        return `${hours + 1}:00`;
+    }
+    
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    return `${hours}:${formattedMinutes}`;
+}
 
 export function calculatePrice() {
     const braidStyleSelect = document.getElementById('braidStyle');
@@ -21,7 +37,7 @@ export function calculatePrice() {
 
     if (!braidStyleSelect.value) {
         estimatedPriceSpan.textContent = "€0.00";
-        estimatedTimeSpan.textContent = "0";
+        estimatedTimeSpan.textContent = "0:00";
         priceBreakdownDiv.innerHTML = `<p>${translate('bd_selectStyle')}</p>`;
         return;
     }
@@ -54,7 +70,7 @@ export function calculatePrice() {
         // Simple styles without rows or divisions (ropeBraid, fulaniBraids, crochetBraids)
         baseLabor = styleData.baseLaborPrice;
         baseTime = styleData.baseTime;
-        breakdownHtml += `<p>${translate(styleData.nameKey)}: €${baseLabor.toFixed(2)} (${baseTime.toFixed(1)}h)</p>`;
+        breakdownHtml += `<p>${translate(styleData.nameKey)}: €${baseLabor.toFixed(2)} (${formatTimeToHHMM(baseTime)})</p>`;
     }
 
     // Apply head coverage adjustment
@@ -66,13 +82,13 @@ export function calculatePrice() {
     adjustedTime = adjustedTime * hairKind.timeFactor * hairDensity.timeFactor * hairLength.timeFactor;
 
     if (headCoverage.multiplier !== 1.0) {
-        breakdownHtml += `<p>${translate('bd_headCoverage')} (${translate(headCoverage.nameKey)} - ${headCoverage.multiplier*100}%): ${translate('bd_labor')} €${adjustedLabor.toFixed(2)}, ${adjustedTime.toFixed(1)}h</p>`;
+        breakdownHtml += `<p>${translate('bd_headCoverage')} (${translate(headCoverage.nameKey)} - ${headCoverage.multiplier*100}%): ${translate('bd_labor')} €${adjustedLabor.toFixed(2)}, ${formatTimeToHHMM(adjustedTime)}</p>`;
     } else {
-        breakdownHtml += `<p>${translate('bd_styleLaborFull')}: €${adjustedLabor.toFixed(2)}, ${adjustedTime.toFixed(1)}h</p>`;
+        breakdownHtml += `<p>${translate('bd_styleLaborFull')}: €${adjustedLabor.toFixed(2)}, ${formatTimeToHHMM(adjustedTime)}</p>`;
     }
 
-    // Apply braid tail length adjustment for styles that support it
-    if (styleData.hasTailLength && braidTailLengthSelect.value) {
+    // Apply braid tail length adjustment for styles that support it (skip cornrows as they handle it internally)
+    if (styleData.hasTailLength && braidTailLengthSelect.value && selectedStyleKey !== 'cornrows' && selectedStyleKey !== 'updoCornrows') {
         const tailLengthResult = calculateTailLengthCost(adjustedLabor, adjustedTime, braidTailLengthSelect);
         adjustedLabor = tailLengthResult.labor;
         adjustedTime = tailLengthResult.time;
@@ -81,8 +97,8 @@ export function calculatePrice() {
         }
     }
 
-    // Calculate extensions
-    if (needsExtensionsCheckbox.checked) {
+    // Calculate extensions (skip for cornrows as they have special extension handling)
+    if (needsExtensionsCheckbox.checked && selectedStyleKey !== 'cornrows' && selectedStyleKey !== 'updoCornrows') {
         const extensionResult = calculateExtensionsCost(extensionAmountSelect);
         materialCosts += extensionResult.materialCosts;
         adjustedTime += extensionResult.timeAdded;
@@ -98,17 +114,121 @@ export function calculatePrice() {
     const finalPrice = adjustedLabor + materialCosts;
 
     estimatedPriceSpan.textContent = `€${finalPrice.toFixed(2)}`;
-    estimatedTimeSpan.textContent = `${adjustedTime.toFixed(1)}`;
+    estimatedTimeSpan.textContent = `${formatTimeToHHMM(adjustedTime)}`;
     priceBreakdownDiv.innerHTML = breakdownHtml;
 }
 
 function calculateCornrowsCost(styleData, cornrowRowsInput) {
     const rows = parseInt(cornrowRowsInput.value) || 0;
-    const labor = styleData.baseLaborPrice + (rows * styleData.laborPricePerRow);
-    const time = styleData.baseTime + (rows * styleData.timePerRow);
-    const breakdown = `<p>${translate('bd_cornrowsLabor')} (${rows} ${translate('bd_rows')}): €${labor.toFixed(2)} (${time.toFixed(1)}h)</p>`;
+    const hairLengthSelect = document.getElementById('hairLength');
+    const braidTailLengthSelect = document.getElementById('braidTailLength');
+    const needsExtensionsCheckbox = document.getElementById('needsExtensions');
+    const extensionAmountSelect = document.getElementById('extensionAmount');
+    
+    // Base labor and time calculation
+    let labor = styleData.baseLaborPrice + (rows * styleData.laborPricePerRow);
+    let time = styleData.baseTime + (rows * styleData.timePerRow);
+    
+    let breakdown = `<p>${translate('bd_cornrowsLabor')} (${rows} ${translate('bd_rows')}): €${labor.toFixed(2)} (${formatTimeToHHMM(time)})</p>`;
+    
+    // Apply number of rows time factor (configurable) - shown as separate line for transparency
+    if (rows > cornrowsConfig.rowTimeFactors.baseRows) {
+        const extraRows = rows - cornrowsConfig.rowTimeFactors.baseRows;
+        const rowTimeFactor = 1 + (extraRows * cornrowsConfig.rowTimeFactors.timeIncreasePerRow);
+        const timeIncrease = time * (rowTimeFactor - 1);
+        time *= rowTimeFactor;
+        breakdown += `<p>${translate('bd_cornrowsComplexity')} (${extraRows} ${translate('bd_extraRows')}): +${formatTimeToHHMM(timeIncrease)}</p>`;
+    }
+    
+    // Check if client hair is short (configurable surcharge)
+    const hairLength = hairLengthSelect.value;
+    if (hairLength === 'extremelyShort' || hairLength === 'short') {
+        labor += cornrowsConfig.shortHairSurcharge;
+        breakdown += `<p>${translate('bd_shortHairSurcharge')}: €${cornrowsConfig.shortHairSurcharge.toFixed(2)}</p>`;
+    }
+    
+    // Apply tail length factors (using cornrows-specific tail length options)
+    const tailLengthKey = braidTailLengthSelect.value;
+    if (tailLengthKey && cornrowsTailLengthOptions[tailLengthKey]) {
+        const tailLength = cornrowsTailLengthOptions[tailLengthKey];
+        if (tailLength.priceFactor !== 1.0 || tailLength.timeFactor !== 1.0) {
+            const priceIncrease = labor * (tailLength.priceFactor - 1);
+            const timeIncrease = time * (tailLength.timeFactor - 1);
+            labor *= tailLength.priceFactor;
+            time *= tailLength.timeFactor;
+            breakdown += `<p>${translate('bd_braidTailLength')} (${translate(tailLength.nameKey)}): +€${priceIncrease.toFixed(2)}, +${formatTimeToHHMM(timeIncrease)}</p>`;
+        }
+    }
+    
+    // Handle cornrows-specific extension pricing (configurable)
+    if (needsExtensionsCheckbox.checked) {
+        const extensionAmount = extensionAmountSelect.value;
+        const tailLengthInches = tailLengthKey ? parseInt(tailLengthKey) : 0;
+        
+        // Check if this is a minimal case (normal hair + tail ≤3 inches + little extensions)
+        const isNormalHair = hairLength === 'normalForBraids';
+        const isShortTail = tailLengthInches <= 3;
+        const isMinimalExtensions = extensionAmount === 'little';
+        
+        if (isNormalHair && isShortTail && isMinimalExtensions) {
+            // Minimal cost for volume-only extensions (configurable)
+            labor += cornrowsConfig.minimalExtensionCost;
+            breakdown += `<p>${translate('bd_cornrowsMinimalExtensions')}: €${cornrowsConfig.minimalExtensionCost.toFixed(2)} (${translate('bd_volumeOnly')})</p>`;
+        } else {
+            // Apply configurable extension factors
+            const extensionResult = calculateCornrowsExtensionFactors(extensionAmount, rows, tailLengthInches);
+            labor += extensionResult.cost;
+            time += extensionResult.time;
+            breakdown += extensionResult.breakdown;
+        }
+    }
     
     return { labor, time, breakdown };
+}
+
+function calculateCornrowsExtensionFactors(extensionAmount, numRows, tailLengthInches) {
+    // Get base extension data from config (easily configurable)
+    const extensionData = cornrowsConfig.extensionCosts[extensionAmount] || cornrowsConfig.extensionCosts.normal;
+    
+    let baseCost = extensionData.baseCost;
+    let baseTime = extensionData.baseTime;
+    let breakdown = `<p>${translate('bd_cornrowsExtensions')} (${translate('ext_' + extensionAmount)} - ${translate('bd_base')}): €${baseCost.toFixed(2)} (+${formatTimeToHHMM(baseTime)})</p>`;
+    
+    // Apply row complexity factor (configurable)
+    if (numRows > cornrowsConfig.rowComplexityFactors.baseRows) {
+        const extraRows = numRows - cornrowsConfig.rowComplexityFactors.baseRows;
+        const rowPriceFactor = 1 + (extraRows * cornrowsConfig.rowComplexityFactors.priceIncreasePerRow);
+        const rowTimeFactor = 1 + (extraRows * cornrowsConfig.rowComplexityFactors.timeIncreasePerRow);
+        
+        const priceIncrease = baseCost * (rowPriceFactor - 1);
+        const timeIncrease = baseTime * (rowTimeFactor - 1);
+        
+        baseCost *= rowPriceFactor;
+        baseTime *= rowTimeFactor;
+        
+        breakdown += `<p>${translate('bd_cornrowsRowComplexity')} (${extraRows} ${translate('bd_extraRows')}): +€${priceIncrease.toFixed(2)}, +${formatTimeToHHMM(timeIncrease)}</p>`;
+    }
+    
+    // Apply tail length factor for extensions (configurable)
+    if (tailLengthInches > cornrowsConfig.tailLengthFactors.baseTailLength) {
+        const extraInches = tailLengthInches - cornrowsConfig.tailLengthFactors.baseTailLength;
+        const tailPriceFactor = 1 + (extraInches * cornrowsConfig.tailLengthFactors.priceIncreasePerInch);
+        const tailTimeFactor = 1 + (extraInches * cornrowsConfig.tailLengthFactors.timeIncreasePerInch);
+        
+        const priceIncrease = baseCost * (tailPriceFactor - 1);
+        const timeIncrease = baseTime * (tailTimeFactor - 1);
+        
+        baseCost *= tailPriceFactor;
+        baseTime *= tailTimeFactor;
+        
+        breakdown += `<p>${translate('bd_cornrowsTailComplexity')} (${extraInches}" ${translate('bd_extraLength')}): +€${priceIncrease.toFixed(2)}, +${formatTimeToHHMM(timeIncrease)}</p>`;
+    }
+    
+    return {
+        cost: baseCost,
+        time: baseTime,
+        breakdown: breakdown
+    };
 }
 
 function calculateStandardBraidsCost(selectedStyleKey, styleData, divisionSizeSelect, needsCurlsCheckbox) {
@@ -116,7 +236,7 @@ function calculateStandardBraidsCost(selectedStyleKey, styleData, divisionSizeSe
     const labor = styleData.baseLaborPriceMediumFull * division.priceFactor;
     const time = styleData.baseTimeMediumFull * division.timeFactor;
     let materialCosts = 0;
-    let breakdown = `<p>${translate(styleData.nameKey)} (${translate('bd_division')}: ${translate(division.nameKey)}): €${labor.toFixed(2)} (${time.toFixed(1)}h)</p>`;
+    let breakdown = `<p>${translate(styleData.nameKey)} (${translate('bd_division')}: ${translate(division.nameKey)}): €${labor.toFixed(2)} (${formatTimeToHHMM(time)})</p>`;
     
     let totalLabor = labor;
     let totalTime = time;
@@ -127,7 +247,7 @@ function calculateStandardBraidsCost(selectedStyleKey, styleData, divisionSizeSe
         const curlTime = styleData.curlAddonTime;
         totalLabor += curlPrice;
         totalTime += curlTime;
-        breakdown += `<p>${translate('bd_bohemianCurls')}: €${curlPrice.toFixed(2)} (${curlTime.toFixed(1)}h)</p>`;
+        breakdown += `<p>${translate('bd_bohemianCurls')}: €${curlPrice.toFixed(2)} (${formatTimeToHHMM(curlTime)})</p>`;
     }
 
     return { 
@@ -153,10 +273,10 @@ function calculateMixBraidsCost(mixPercentageInput, cornrowRowsInput, divisionSi
 
     let breakdown = '';
     if (cornrowPercent > 0) {
-        breakdown += `<p>${translate('bd_mixCornrows')} (${(cornrowPercent*100).toFixed(0)}%, ${numCornrows} ${translate('bd_rows')}): €${cornrowPartLabor.toFixed(2)} (${cornrowPartTime.toFixed(1)}h)</p>`;
+        breakdown += `<p>${translate('bd_mixCornrows')} (${(cornrowPercent*100).toFixed(0)}%, ${numCornrows} ${translate('bd_rows')}): €${cornrowPartLabor.toFixed(2)} (${formatTimeToHHMM(cornrowPartTime)})</p>`;
     }
     if (boxBraidPercent > 0) {
-        breakdown += `<p>${translate('bd_mixBoxBraids')} (${(boxBraidPercent*100).toFixed(0)}%, ${translate('bd_division')}: ${translate(division.nameKey)}): €${boxBraidPartLabor.toFixed(2)} (${boxBraidPartTime.toFixed(1)}h)</p>`;
+        breakdown += `<p>${translate('bd_mixBoxBraids')} (${(boxBraidPercent*100).toFixed(0)}%, ${translate('bd_division')}: ${translate(division.nameKey)}): €${boxBraidPartLabor.toFixed(2)} (${formatTimeToHHMM(boxBraidPartTime)})</p>`;
     }
 
     return {
@@ -175,7 +295,7 @@ function calculateExtensionsCost(extensionAmountSelect) {
     const materialCosts = selectedExtension.cost;
     const timeAdded = selectedExtension.timeAdded;
     const laborCosts = timeAdded * HOURLY_RATE_FOR_EXTENSIONS_LABOR;
-    const breakdown = `<p>${translate('bd_extensions')} (${translate(selectedExtension.nameKey)}): €${materialCosts.toFixed(2)} (${translate('bd_material')}) + €${laborCosts.toFixed(2)} (${translate('bd_labor')}), ${timeAdded.toFixed(1)}h ${translate('bd_added')}</p>`;
+    const breakdown = `<p>${translate('bd_extensions')} (${translate(selectedExtension.nameKey)}): €${materialCosts.toFixed(2)} (${translate('bd_material')}) + €${laborCosts.toFixed(2)} (${translate('bd_labor')}), ${formatTimeToHHMM(timeAdded)} ${translate('bd_added')}</p>`;
 
     return { materialCosts, timeAdded, laborCosts, breakdown };
 }
@@ -196,7 +316,7 @@ function calculateTailLengthCost(currentLabor, currentTime, braidTailLengthSelec
     
     let breakdown = '';
     if (priceDiff > 0.01 || timeDiff > 0.01) {
-        breakdown = `<p>${translate('bd_braidTailLength')} (${translate(tailLength.nameKey)}): +€${priceDiff.toFixed(2)}, +${timeDiff.toFixed(1)}h</p>`;
+        breakdown = `<p>${translate('bd_braidTailLength')} (${translate(tailLength.nameKey)}): +€${priceDiff.toFixed(2)}, +${formatTimeToHHMM(timeDiff)}</p>`;
     }
 
     return { labor: adjustedLabor, time: adjustedTime, breakdown };

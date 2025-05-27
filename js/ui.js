@@ -188,7 +188,7 @@ export function initializeFormOptions() {
     populateSelectWithOptions(extensionAmountSelect, extensionOptions);
     populateSelectWithOptions(braidTailLengthSelect, braidTailLengthOptions);
     
-    // Set default values: cornrows, wavy hair, medium density, normal length, full head, no extensions, 8 inch tail
+    // Set default values: cornrows, wavy hair, medium density, normal length, full head, no extensions, 2 inch tail
     braidStyleSelect.value = 'cornrows';
     hairKindSelect.value = 'wavy';
     hairDensitySelect.value = 'medium';
@@ -196,7 +196,7 @@ export function initializeFormOptions() {
     headCoverageSelect.value = 'full';
     needsExtensionsCheckbox.checked = false;
     extensionAmountSelect.value = 'normal';
-    braidTailLengthSelect.value = '8'; // Default to 8 inches (shoulders)
+    braidTailLengthSelect.value = '2'; // Default to 2 inches
     
     // Initialize cornrow options after head coverage is set
     updateCornrowOptions();
