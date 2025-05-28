@@ -1,7 +1,7 @@
 // Main application initialization and coordination
 import { detectLanguage, setLanguage, getCurrentLanguage, updateAllText } from './translations.js';
 import { applyTheme, getInitialTheme, setupThemeListeners } from './theme.js';
-import { initializeFormOptions, setupFormListeners, updateOptionsVisibility } from './ui.js';
+import { initializeFormOptions, setupFormListeners, updateOptionsVisibility, setupSettingsModal } from './ui.js';
 import { calculatePrice } from './calculator.js';
 
 function initializeApplication() {
@@ -22,6 +22,7 @@ function initializeApplication() {
     // Set up event listeners
     setupFormListeners();
     setupThemeListeners();
+    setupSettingsModal();
     
     // Set language dropdown to current language
     const languageSelect = document.getElementById('languageSelect');

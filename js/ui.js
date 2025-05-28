@@ -197,6 +197,44 @@ export function initializeFormOptions() {
     populateLanguageDropdown();
 }
 
+export function setupSettingsModal() {
+    const settingsButton = document.getElementById('setSettings');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeModalButton = document.getElementById('closeSettingsModal');
+    const closeModalBtn = document.getElementById('closeSettingsModalBtn');
+
+    function openModal() {
+        settingsModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    function closeModal() {
+        settingsModal.classList.add('hidden');
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+
+    // Open modal when settings button is clicked
+    settingsButton.addEventListener('click', openModal);
+
+    // Close modal when close button is clicked
+    closeModalButton.addEventListener('click', closeModal);
+    closeModalBtn.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside the modal content
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !settingsModal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+}
+
 function updateAllFormOptions() {
     const braidStyleSelect = document.getElementById('braidStyle');
     const hairKindSelect = document.getElementById('hairKind');

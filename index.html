@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate="pageTitle">Braid Cost Estimator</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Material Symbols (Modern alternative) -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script>
         // Set theme ASAP to avoid FOUC (Flash of Unstyled Content)
@@ -27,7 +31,10 @@
 
         <header class="mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm flex justify-between items-center gap-4">
             <div class="hidden xl:block">
-                <h2 class="text-lg font-medium text-gray-800 dark:text-white">Professional Braid Calculator</h2>
+                <h2 class="text-lg font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                    <span class="material-icons text-indigo-600 dark:text-indigo-400">content_cut</span>
+                    Professional Braid Calculator
+                </h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Get accurate pricing and time estimates</p>
             </div>
             <div class="flex items-center gap-3 ml-auto xl:ml-0">
@@ -41,10 +48,19 @@
                     <select id="languageSelect" class="control-select">
                         </select>
                 </div>
+                <div>
+                    <label for="setSettings" class="sr-only" data-translate="settingsLabel">Settings:</label>
+                    <button id="setSettings" class="control-button" data-translate-title="settingsLabel" data-translate-aria-label="settingsLabel" title="Settings" aria-label="Settings">
+                        <span class="material-icons">settings</span>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <h1 id="mainTitle" class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white text-center mb-6" data-translate="mainTitle">Braid Service Cost Estimator</h1>
+        <h1 id="mainTitle" class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white text-center mb-6 flex items-center justify-center gap-3" data-translate="mainTitle">
+            <span class="material-icons text-3xl text-indigo-600 dark:text-indigo-400">calculate</span>
+            Braid Service Cost Estimator
+        </h1>
 
         <!-- Main content area with responsive grid layout -->
         <div class="xl:grid xl:grid-cols-3 xl:gap-8 space-y-6 xl:space-y-0">
@@ -52,7 +68,10 @@
             <!-- Left column: Braid Style Configuration -->
             <div class="xl:col-span-1">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md h-fit">
-                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Braid Configuration</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-icons text-indigo-600 dark:text-indigo-400">tune</span>
+                        Braid Configuration
+                    </h2>
                     
                     <div class="space-y-4">
                         <div class="form-group">
@@ -102,7 +121,10 @@
             <!-- Middle column: Extensions and Hair Properties -->
             <div class="xl:col-span-1">
                 <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md h-fit">
-                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Extensions & Hair Properties</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                        <span class="material-icons text-indigo-600 dark:text-indigo-400">extension</span>
+                        Extensions & Hair Properties
+                    </h2>
                     
                     <div class="space-y-4">
                         <div class="form-group space-y-3">
@@ -150,19 +172,45 @@
             <!-- Right column: Price Estimate (larger on large screens) -->
             <div class="xl:col-span-1">
                 <div class="p-6 border-2 border-indigo-600 dark:border-indigo-500 rounded-lg bg-indigo-50 dark:bg-gray-800 shadow-lg h-fit sticky top-4">
-                    <h2 class="text-xl sm:text-2xl font-semibold text-indigo-800 dark:text-indigo-200 mb-4">
+                    <h2 class="text-xl sm:text-2xl font-semibold text-indigo-800 dark:text-indigo-200 mb-4 flex items-center gap-2">
+                        <span class="material-icons text-2xl">local_offer</span>
                         <span data-translate="estimatedPriceLabel">Estimated Price:</span>
                     </h2>
-                    <div class="text-3xl xl:text-4xl font-bold text-indigo-700 dark:text-indigo-300 mb-4">
+                    <div class="text-3xl xl:text-4xl font-bold text-indigo-700 dark:text-indigo-300 mb-4 flex items-center gap-2">
+                        <span class="material-icons text-3xl">attach_money</span>
                         <span id="estimatedPrice">€0.00</span>
                     </div>
-                    <p class="text-base text-gray-700 dark:text-gray-300 mb-4">
+                    <p class="text-base text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                        <span class="material-icons">schedule</span>
                         <span data-translate="estimatedTimeLabel">Estimated Time:</span>
                         <span id="estimatedTime" class="font-medium">0</span>
                         <span data-translate="hoursUnit"> hours</span>
                     </p>
                     <div id="priceBreakdown" class="text-sm text-gray-600 dark:text-gray-400 space-y-1 border-t border-indigo-200 dark:border-indigo-700 pt-4">
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" data-translate="settingsTitle">Settings</h3>
+                <button id="closeSettingsModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-6">
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Settings panel coming soon...</p>
+                <div class="flex justify-end">
+                    <button id="closeSettingsModalBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" data-translate="settingsClose">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>

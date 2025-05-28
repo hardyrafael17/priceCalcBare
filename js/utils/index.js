@@ -6,3 +6,4 @@ export { cornrowsBraidingConfig } from './cornrowsBraidingConfig.js';
 export { calculateDynamicGirth } from './calculateDynamicGirth.js';
 export { calculateCornrowsTailCost, calculateCornrowsTailCostWithDynamicGirth } from './calculateCornrowsTailCost.js';
 export { populateSelectWithOptions } from './populateSelectWithOptions.js';
+export { createMaterialIcon, createIconWithText, addIconToElement, ICONS } from './materialIcons.js';

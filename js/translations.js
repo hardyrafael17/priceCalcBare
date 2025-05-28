@@ -10,6 +10,9 @@ export const translations = {
         languageLabel: "Language", 
         langEN: "English", 
         langES: "Español",
+        settingsLabel: "Settings",
+        settingsTitle: "Settings",
+        settingsClose: "Close",
         braidStyleLabel: "Braid Style:",
         hairKindLabel: "Hair Type:",
         hairDensityLabel: "Hair Density:",
@@ -122,6 +125,9 @@ export const translations = {
         languageLabel: "Idioma", 
         langEN: "Inglés", 
         langES: "Spanish",
+        settingsLabel: "Configuración",
+        settingsTitle: "Configuración",
+        settingsClose: "Cerrar",
         braidStyleLabel: "Estilo de Trenza:",
         hairKindLabel: "Tipo de Cabello:",
         hairDensityLabel: "Densidad del Cabello:",
@@ -260,5 +266,19 @@ export function updateAllText() {
         } else {
             el.textContent = translation;
         }
+    });
+
+    // Handle title attributes
+    document.querySelectorAll('[data-translate-title]').forEach(el => {
+        const key = el.getAttribute('data-translate-title');
+        const translation = translate(key);
+        el.setAttribute('title', translation);
+    });
+
+    // Handle aria-label attributes
+    document.querySelectorAll('[data-translate-aria-label]').forEach(el => {
+        const key = el.getAttribute('data-translate-aria-label');
+        const translation = translate(key);
+        el.setAttribute('aria-label', translation);
     });
 }
