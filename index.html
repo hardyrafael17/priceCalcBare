@@ -211,56 +211,69 @@
                     <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-t-lg cursor-pointer" id="cornrowsSettingsHeader">
                         <h4 class="text-md font-semibold text-gray-900 dark:text-white flex items-center">
                             <span class="material-icons mr-2 transition-transform duration-200" id="cornrowsExpandIcon">expand_more</span>
-                            Cornrows Settings
+                            <span data-translate="settings_cornrowsTitle">Cornrows Settings</span>
                         </h4>
-                        <button id="resetCornrowsSettings" class="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
+                        <button id="resetCornrowsSettings" class="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors" data-translate="settings_resetSectionDefaults">
                             Reset Section Defaults
                         </button>
                     </div>
                     
                     <div id="cornrowsSettingsContent" class="p-4 space-y-4 hidden">
-                        <!-- Base Price -->
+                        <!-- Base Price with Advanced Calculation -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="cornrowsBasePrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Base Price (€)</label>
+                                <label for="cornrowsBasePrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-translate="settings_basePrice">Base Price (€)</label>
                                 <input type="number" id="cornrowsBasePrice" step="0.25" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white">
                             </div>
                             
                             <div>
-                                <label for="cornrowsExtraRowCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cost per Extra Row (€)</label>
+                                <label for="cornrowsExtraRowCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-translate="settings_extraRowCost">Cost per Extra Row (€)</label>
                                 <input type="number" id="cornrowsExtraRowCost" step="0.25" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white">
                             </div>
                         </div>
                         
-                        <!-- Extra Row Ratio Curve -->
+                        <!-- Advanced Base Price Calculation -->
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="cornrowsEnableAdvancedBasePrice" class="mr-2">
+                                <label for="cornrowsEnableAdvancedBasePrice" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-translate="settings_enableAdvancedBasePrice">Enable Advanced Base Price Calculation (by rows & tail length)</label>
+                            </div>
+                            <div id="advancedBasePriceContainer" class="hidden flex items-center space-x-2">
+                                <label for="cornrowsAdvancedBaseRatio" class="text-sm text-gray-600 dark:text-gray-400" data-translate="settings_ratio">Ratio:</label>
+                                <input type="number" id="cornrowsAdvancedBaseRatio" step="0.01" min="0.1" max="2.0" class="w-20 p-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white text-sm">
+                                <span class="text-xs text-gray-500 dark:text-gray-400" data-translate="settings_advancedBaseHint">Higher = more complex pricing</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Extra Row Price Ratio -->
                         <div class="flex items-center space-x-4">
                             <div class="flex items-center">
                                 <input type="checkbox" id="cornrowsEnableExtraRowRatio" class="mr-2">
-                                <label for="cornrowsEnableExtraRowRatio" class="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Extra Row Discount Curve</label>
+                                <label for="cornrowsEnableExtraRowRatio" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-translate="settings_enableExtraRowPriceRatio">Enable Extra Row Price Ratio Calculation</label>
                             </div>
                             <div id="extraRowRatioContainer" class="hidden flex items-center space-x-2">
-                                <label for="cornrowsExtraRowRatio" class="text-sm text-gray-600 dark:text-gray-400">Ratio:</label>
+                                <label for="cornrowsExtraRowRatio" class="text-sm text-gray-600 dark:text-gray-400" data-translate="settings_ratio">Ratio:</label>
                                 <input type="number" id="cornrowsExtraRowRatio" step="0.01" min="0.1" max="1.0" class="w-20 p-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white text-sm">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">Lower = higher discount</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400" data-translate="settings_ratioHint">Lower = higher discount</span>
                             </div>
                         </div>
                         
                         <!-- Extension Cost -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="cornrowsExtensionCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Extension Cost (€)</label>
+                                <label for="cornrowsExtensionCost" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-translate="settings_extensionCost">Extension Cost (€)</label>
                                 <input type="number" id="cornrowsExtensionCost" step="0.25" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white">
                             </div>
                         </div>
                         
-                        <!-- Extension Ratio Curve -->
+                        <!-- Extension Price Ratio -->
                         <div class="flex items-center space-x-4">
                             <div class="flex items-center">
                                 <input type="checkbox" id="cornrowsEnableExtensionRatio" class="mr-2">
-                                <label for="cornrowsEnableExtensionRatio" class="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Extension Discount Curve (by # of rows)</label>
+                                <label for="cornrowsEnableExtensionRatio" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-translate="settings_enableExtensionPriceRatio">Enable Extension Price Ratio Calculation (by # of rows)</label>
                             </div>
                             <div id="extensionRatioContainer" class="hidden flex items-center space-x-2">
-                                <label for="cornrowsExtensionRatio" class="text-sm text-gray-600 dark:text-gray-400">Ratio:</label>
+                                <label for="cornrowsExtensionRatio" class="text-sm text-gray-600 dark:text-gray-400" data-translate="settings_ratio">Ratio:</label>
                                 <input type="number" id="cornrowsExtensionRatio" step="0.01" min="0.1" max="1.0" class="w-20 p-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white text-sm">
                             </div>
                         </div>
@@ -268,20 +281,28 @@
                         <!-- Tail Cost -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="cornrowsTailCostPerInch" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tail Cost per Inch (€)</label>
+                                <label for="cornrowsTailCostPerInch" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-translate="settings_tailCostPerInch">Tail Cost per Inch (€)</label>
                                 <input type="number" id="cornrowsTailCostPerInch" step="0.05" min="0" class="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white">
                             </div>
                         </div>
                         
-                        <!-- Tail Ratio Curve -->
+                        <!-- Tail Price Ratio -->
                         <div class="flex items-center space-x-4">
                             <div class="flex items-center">
                                 <input type="checkbox" id="cornrowsEnableTailRatio" class="mr-2">
-                                <label for="cornrowsEnableTailRatio" class="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Tail Discount Curve (by # of rows)</label>
+                                <label for="cornrowsEnableTailRatio" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-translate="settings_enableTailPriceRatio">Enable Tail Price Ratio Calculation (by # of rows)</label>
                             </div>
                             <div id="tailRatioContainer" class="hidden flex items-center space-x-2">
-                                <label for="cornrowsTailRatio" class="text-sm text-gray-600 dark:text-gray-400">Ratio:</label>
+                                <label for="cornrowsTailRatio" class="text-sm text-gray-600 dark:text-gray-400" data-translate="settings_ratio">Ratio:</label>
                                 <input type="number" id="cornrowsTailRatio" step="0.01" min="0.1" max="1.0" class="w-20 p-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md text-gray-900 dark:text-white text-sm">
+                            </div>
+                        </div>
+                        
+                        <!-- Price Preview -->
+                        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-blue-800 dark:text-blue-200" data-translate="settings_previewCurrentSelection">Preview with current selection:</span>
+                                <span id="settingsPreviewPrice" class="text-lg font-bold text-blue-900 dark:text-blue-100">€0.00</span>
                             </div>
                         </div>
                     </div>
@@ -289,11 +310,11 @@
                 
                 <!-- Action Buttons -->
                 <div class="flex justify-between">
-                    <button id="resetAllSettings" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                    <button id="resetAllSettings" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" data-translate="settings_resetAllSettings">
                         Reset All Settings
                     </button>
                     <div class="space-x-2">
-                        <button id="saveSettingsBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                        <button id="saveSettingsBtn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors" data-translate="settings_saveSettings">
                             Save Settings
                         </button>
                         <button id="closeSettingsModalBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors" data-translate="settingsClose">

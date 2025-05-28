@@ -117,11 +117,24 @@ function calculateCornrowsCost(styleData, cornrowRowsInput) {
     
     // Base labor and time calculation using settings
     let labor = cornrowsSettings.basePrice;
-    let time = styleData.baseTime; // Keep using the base time from style data for now
     
+    // Apply advanced base price calculation if enabled
+    if (cornrowsSettings.enableAdvancedBasePrice) {
+        const tailLengthKey = braidTailLengthSelect.value;
+        const tailLengthInches = tailLengthKey ? parseInt(tailLengthKey) : 0;
+        
+        // Advanced calculation: base price adjusted by rows and tail length
+        const rowFactor = Math.pow(cornrowsSettings.advancedBaseRatio, (rows - 1) * 0.1);
+        const tailFactor = Math.pow(cornrowsSettings.advancedBaseRatio, tailLengthInches * 0.02);
+        labor = cornrowsSettings.basePrice * rowFactor * tailFactor;
+    }
+    
+    let time = styleData.baseTime; // Keep using the base time from style data for now
+   
     // Calculate extra row costs with optional ratio curve
-    if (rows > 1) {
-        const extraRows = rows - 1;
+    // Extra row cost only applies starting from the 3rd row (rows > 2)
+    if (rows > 2) {
+        const extraRows = rows - 2; // Start counting extra rows from the 3rd row
         let extraRowCost = extraRows * cornrowsSettings.extraRowCost;
         
         // Apply ratio curve if enabled
@@ -132,6 +145,10 @@ function calculateCornrowsCost(styleData, cornrowRowsInput) {
         
         labor += extraRowCost;
         time += (rows * styleData.timePerRow); // Keep existing time calculation
+    } else if (rows > 0) {
+        // For 1-2 rows, only add base time calculation and just add 5 euros
+        labor += 5; // Base cost for 1-2 rows
+        time += (rows * styleData.timePerRow);
     }
     
     let breakdown = `<p>${translate('bd_cornrowsLabor')} (${rows} ${translate('bd_rows')}): €${labor.toFixed(2)} (${formatTimeToHHMM(time)})</p>`;

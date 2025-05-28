@@ -6,6 +6,7 @@ export class SettingsModal {
         this.modal = null;
         this.settingsManager = null;
         this.isInitialized = false;
+        this.previewPriceElement = null;
     }
 
     async initialize() {
@@ -19,6 +20,7 @@ export class SettingsModal {
         this.saveSettingsBtn = document.getElementById('saveSettingsBtn');
         this.resetAllSettingsBtn = document.getElementById('resetAllSettings');
         this.resetCornrowsBtn = document.getElementById('resetCornrowsSettings');
+        this.previewPriceElement = document.getElementById('settingsPreviewPrice');
 
         // Import settings manager
         const { settingsManager } = await import('./settings.js');
@@ -67,6 +69,9 @@ export class SettingsModal {
         
         // Load current settings to UI
         this.loadSettingsToUI();
+        
+        // Set up input listeners for real-time preview updates
+        this.setupSettingsInputListeners();
     }
 
     closeModal() {
@@ -88,11 +93,20 @@ export class SettingsModal {
         document.getElementById('cornrowsTailCostPerInch').value = settings.tailCostPerInch;
         document.getElementById('cornrowsTailRatio').value = settings.tailRatioCurve;
         document.getElementById('cornrowsEnableTailRatio').checked = settings.enableTailRatio;
+        document.getElementById('cornrowsEnableAdvancedBasePrice').checked = settings.enableAdvancedBasePrice;
+        document.getElementById('cornrowsAdvancedBaseRatio').value = settings.advancedBaseRatio;
         
-        // Update ratio curve visibility
-        this.setupRatioCurveToggle('cornrowsEnableExtraRowRatio', 'extraRowRatioContainer');
-        this.setupRatioCurveToggle('cornrowsEnableExtensionRatio', 'extensionRatioContainer');
-        this.setupRatioCurveToggle('cornrowsEnableTailRatio', 'tailRatioContainer');
+        // Set up ratio curve visibility toggles after a small delay to ensure DOM is ready
+        setTimeout(() => {
+            this.setupRatioCurveToggle('cornrowsEnableExtraRowRatio', 'extraRowRatioContainer');
+            this.setupRatioCurveToggle('cornrowsEnableExtensionRatio', 'extensionRatioContainer');
+            this.setupRatioCurveToggle('cornrowsEnableTailRatio', 'tailRatioContainer');
+            this.setupRatioCurveToggle('cornrowsEnableAdvancedBasePrice', 'advancedBasePriceContainer');
+            this.setupRatioCurveToggle('cornrowsEnableTailRatio', 'tailRatioContainer');
+        }, 100);
+        
+        // Update price preview
+        this.updatePricePreview();
     }
 
     saveSettings() {
@@ -107,6 +121,11 @@ export class SettingsModal {
         this.settingsManager.updateCornrowsSetting('tailCostPerInch', parseFloat(document.getElementById('cornrowsTailCostPerInch').value));
         this.settingsManager.updateCornrowsSetting('tailRatioCurve', parseFloat(document.getElementById('cornrowsTailRatio').value));
         this.settingsManager.updateCornrowsSetting('enableTailRatio', document.getElementById('cornrowsEnableTailRatio').checked);
+        this.settingsManager.updateCornrowsSetting('enableAdvancedBasePrice', document.getElementById('cornrowsEnableAdvancedBasePrice').checked);
+        this.settingsManager.updateCornrowsSetting('advancedBaseRatio', parseFloat(document.getElementById('cornrowsAdvancedBaseRatio').value));
+        
+        // Update price preview
+        this.updatePricePreview();
         
         // Show success feedback
         this.showButtonFeedback(this.saveSettingsBtn, 'Saved!', 'bg-green-600', 'hover:bg-green-700', 'bg-green-800');
@@ -181,11 +200,6 @@ export class SettingsModal {
                 cornrowsIcon.style.transform = 'rotate(0deg)';
             }
         });
-        
-        // Set up ratio curve visibility toggles
-        this.setupRatioCurveToggle('cornrowsEnableExtraRowRatio', 'extraRowRatioContainer');
-        this.setupRatioCurveToggle('cornrowsEnableExtensionRatio', 'extensionRatioContainer');
-        this.setupRatioCurveToggle('cornrowsEnableTailRatio', 'tailRatioContainer');
     }
 
     setupRatioCurveToggle(checkboxId, containerId) {
@@ -199,15 +213,108 @@ export class SettingsModal {
                 } else {
                     container.classList.add('hidden');
                 }
+                // Update price preview when visibility changes
+                this.updatePricePreview();
             };
             
             // Set initial state
             toggleVisibility();
             
-            // Remove existing listeners and add new one
-            const newCheckbox = checkbox.cloneNode(true);
-            checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-            newCheckbox.addEventListener('change', toggleVisibility);
+            // Remove any existing event listeners first
+            if (checkbox._toggleVisibility) {
+                checkbox.removeEventListener('change', checkbox._toggleVisibility);
+            }
+            
+            // Store the function reference for later removal
+            checkbox._toggleVisibility = toggleVisibility;
+            
+            // Add the event listener
+            checkbox.addEventListener('change', toggleVisibility);
+        }
+    }
+
+    setupSettingsInputListeners() {
+        // Add event listeners to all cornrows settings inputs for real-time preview updates
+        const settingsInputs = [
+            'cornrowsBasePrice',
+            'cornrowsExtraRowCost',
+            'cornrowsExtraRowRatio',
+            'cornrowsEnableExtraRowRatio',
+            'cornrowsExtensionCost',
+            'cornrowsExtensionRatio',
+            'cornrowsEnableExtensionRatio',
+            'cornrowsTailCostPerInch',
+            'cornrowsTailRatio',
+            'cornrowsEnableTailRatio'
+        ];
+
+        settingsInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                const eventType = input.type === 'checkbox' ? 'change' : 'input';
+                input.addEventListener(eventType, () => this.updatePricePreview());
+            }
+        });
+    }
+
+    async updatePricePreview() {
+        if (!this.previewPriceElement) return;
+
+        try {
+            // Import the calculatePrice function
+            const { calculatePrice } = await import('./calculator.js');
+            
+            // Get current form values (main calculator form, not settings)
+            const braidStyleSelect = document.getElementById('braidStyle');
+            const cornrowRowsSelect = document.getElementById('cornrowRows');
+            
+            // Only show preview for cornrows styles
+            if (!braidStyleSelect || !braidStyleSelect.value || 
+                (braidStyleSelect.value !== 'cornrows' && braidStyleSelect.value !== 'updoCornrows')) {
+                this.previewPriceElement.textContent = 'N/A (select cornrows)';
+                return;
+            }
+
+            // Temporarily apply the current settings inputs to get preview calculation
+            const originalSettings = this.settingsManager.getCornrowsSettings();
+            
+            // Get current input values from the settings form
+            const previewSettings = {
+                basePrice: parseFloat(document.getElementById('cornrowsBasePrice').value) || 0,
+                extraRowCost: parseFloat(document.getElementById('cornrowsExtraRowCost').value) || 0,
+                extraRowRatioCurve: parseFloat(document.getElementById('cornrowsExtraRowRatio').value) || 1,
+                enableExtraRowRatio: document.getElementById('cornrowsEnableExtraRowRatio').checked,
+                extensionCost: parseFloat(document.getElementById('cornrowsExtensionCost').value) || 0,
+                extensionRatioCurve: parseFloat(document.getElementById('cornrowsExtensionRatio').value) || 1,
+                enableExtensionRatio: document.getElementById('cornrowsEnableExtensionRatio').checked,
+                tailCostPerInch: parseFloat(document.getElementById('cornrowsTailCostPerInch').value) || 0,
+                tailRatioCurve: parseFloat(document.getElementById('cornrowsTailRatio').value) || 1,
+                enableTailRatio: document.getElementById('cornrowsEnableTailRatio').checked
+            };
+
+            // Temporarily update settings for calculation
+            Object.keys(previewSettings).forEach(key => {
+                this.settingsManager.updateCornrowsSetting(key, previewSettings[key]);
+            });
+
+            // Trigger calculation with temporary settings
+            calculatePrice();
+            
+            // Get the calculated price from the main display
+            const estimatedPriceElement = document.getElementById('estimatedPrice');
+            const currentPrice = estimatedPriceElement ? estimatedPriceElement.textContent : '€0.00';
+            
+            // Update preview display
+            this.previewPriceElement.textContent = currentPrice;
+
+            // Restore original settings
+            Object.keys(originalSettings).forEach(key => {
+                this.settingsManager.updateCornrowsSetting(key, originalSettings[key]);
+            });
+
+        } catch (error) {
+            console.error('Error updating price preview:', error);
+            this.previewPriceElement.textContent = 'Error';
         }
     }
 }

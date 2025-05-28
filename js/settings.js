@@ -6,14 +6,16 @@ export class SettingsManager {
             cornrows: {
                 basePrice: 12.75,
                 extraRowCost: 5.0,
-                extraRowRatioCurve: 0.9,
+                extraRowRatioCurve: 1,
                 enableExtraRowRatio: false,
-                extensionCost: 10.0,
-                extensionRatioCurve: 0.95,
+                extensionCost: 5,
+                extensionRatioCurve: 1.14,
                 enableExtensionRatio: false,
-                tailCostPerInch: 0.5,
-                tailRatioCurve: 0.98,
-                enableTailRatio: false
+                tailCostPerInch: 1,
+                tailRatioCurve: 1,
+                enableTailRatio: false,
+                enableAdvancedBasePrice: false,
+                advancedBaseRatio: 1
             }
         };
         
