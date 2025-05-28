@@ -28,6 +28,17 @@ function initializeApplication() {
     const languageSelect = document.getElementById('languageSelect');
     languageSelect.value = getCurrentLanguage();
     
+    // Listen for settings changes and recalculate
+    window.addEventListener('settingsChanged', (event) => {
+        if (event.detail.section === 'cornrows') {
+            calculatePrice(); // Recalculate when cornrows settings change
+        }
+    });
+    
+    window.addEventListener('settingsReset', () => {
+        calculatePrice(); // Recalculate when settings are reset
+    });
+    
     // Initial UI state and calculation
     updateOptionsVisibility();
     calculatePrice();

@@ -2,6 +2,7 @@
 import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, cornrowsTailLengthOptions, hairKindOptions, hairDensityOptions, hairLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts, cornrowsConfig } from './data.js';
 import { translate } from './translations.js';
 import { calculateCornrowsTailCost, cornrowsBraidingConfig, calculateDynamicGirth, calculateCornrowsTailCostWithDynamicGirth, formatTimeToHHMM } from './utils.js';
+import { settingsManager } from './settings.js';
 
 export function calculatePrice() {
     const braidStyleSelect = document.getElementById('braidStyle');
@@ -111,81 +112,78 @@ function calculateCornrowsCost(styleData, cornrowRowsInput) {
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
     const extensionAmountSelect = document.getElementById('extensionAmount');
     
-    // Base labor and time calculation
-    let labor = styleData.baseLaborPrice + (rows * styleData.laborPricePerRow);
-    let time = styleData.baseTime + (rows * styleData.timePerRow);
+    // Get cornrows settings
+    const cornrowsSettings = settingsManager.getCornrowsSettings();
+    
+    // Base labor and time calculation using settings
+    let labor = cornrowsSettings.basePrice;
+    let time = styleData.baseTime; // Keep using the base time from style data for now
+    
+    // Calculate extra row costs with optional ratio curve
+    if (rows > 1) {
+        const extraRows = rows - 1;
+        let extraRowCost = extraRows * cornrowsSettings.extraRowCost;
+        
+        // Apply ratio curve if enabled
+        if (cornrowsSettings.enableExtraRowRatio && extraRows > 0) {
+            const ratioPower = Math.pow(cornrowsSettings.extraRowRatioCurve, extraRows - 1);
+            extraRowCost = cornrowsSettings.extraRowCost + (extraRows - 1) * cornrowsSettings.extraRowCost * ratioPower;
+        }
+        
+        labor += extraRowCost;
+        time += (rows * styleData.timePerRow); // Keep existing time calculation
+    }
     
     let breakdown = `<p>${translate('bd_cornrowsLabor')} (${rows} ${translate('bd_rows')}): €${labor.toFixed(2)} (${formatTimeToHHMM(time)})</p>`;
     
-    // Apply number of rows time factor (configurable) - shown as separate line for transparency
-    if (rows > cornrowsConfig.rowTimeFactors.baseRows) {
-        const extraRows = rows - cornrowsConfig.rowTimeFactors.baseRows;
-        const rowTimeFactor = 1 + (extraRows * cornrowsConfig.rowTimeFactors.timeIncreasePerRow);
-        const timeIncrease = time * (rowTimeFactor - 1);
-        time *= rowTimeFactor;
-        breakdown += `<p>${translate('bd_cornrowsComplexity')} (${extraRows} ${translate('bd_extraRows')}): +${formatTimeToHHMM(timeIncrease)}</p>`;
-    }
     
-    // Check if client hair is short (configurable surcharge)
+    // Check if client hair is short (base surcharge - can be moved to settings later)
     const hairLength = hairLengthSelect.value;
     if (hairLength === 'extremelyShort' || hairLength === 'short') {
-        labor += cornrowsConfig.shortHairSurcharge;
-        breakdown += `<p>${translate('bd_shortHairSurcharge')}: €${cornrowsConfig.shortHairSurcharge.toFixed(2)}</p>`;
+        labor += 10; // Base short hair surcharge
+        breakdown += `<p>${translate('bd_shortHairSurcharge')}: €10.00</p>`;
     }
     
-    // Apply tail length pricing using sophisticated girth-based algorithm
+    // Apply tail length pricing using settings
     const tailLengthKey = braidTailLengthSelect.value;
     if (tailLengthKey && tailLengthKey !== 'none') {
         const tailLengthInches = parseInt(tailLengthKey) || 0;
         
         if (tailLengthInches > 0) {
-            // Calculate dynamic girth based on row count, extensions, and hair density
-            const extensionAmount = needsExtensionsCheckbox.checked ? extensionAmountSelect.value : null;
-            const hairDensity = hairDensitySelect.value;
-            const dynamicGirth = calculateDynamicGirth(rows, extensionAmount, hairDensity);
+            // Calculate tail cost using settings
+            let tailCost = tailLengthInches * cornrowsSettings.tailCostPerInch;
             
-            // Determine complexity based on tail length and row count
-            let complexityType = 'normal';
-            if (tailLengthInches >= 24 || rows >= 10) {
-                complexityType = 'detailed';
-            } else if (tailLengthInches >= 36 || rows >= 15) {
-                complexityType = 'expert';
-            } else if (tailLengthInches <= 6 && rows <= 4) {
-                complexityType = 'simple';
+            // Apply ratio curve based on number of rows if enabled
+            if (cornrowsSettings.enableTailRatio && rows > 1) {
+                const ratioPower = Math.pow(cornrowsSettings.tailRatioCurve, rows - 1);
+                tailCost = tailLengthInches * cornrowsSettings.tailCostPerInch * ratioPower;
             }
             
-            // Use sophisticated girth-based algorithm for tail pricing with dynamic girth
-            const tailResult = calculateCornrowsTailCostWithDynamicGirth(rows, tailLengthInches, dynamicGirth, complexityType);
-            
-            if (tailResult.price > 0) {
-                labor += tailResult.price;
-                time += tailResult.time;
-                breakdown += `<p>${translate('bd_braidTailLength')} (${tailLengthInches}" girth:${dynamicGirth.toFixed(2)}"/${complexityType}): +€${tailResult.price.toFixed(2)}, +${formatTimeToHHMM(tailResult.time)}</p>`;
-            }
+            labor += tailCost;
+            breakdown += `<p>${translate('bd_braidTailLength')} (${tailLengthInches}"): +€${tailCost.toFixed(2)}</p>`;
         }
     }
     
-    // Handle cornrows-specific extension pricing (configurable)
+    // Handle cornrows-specific extension pricing using settings
     if (needsExtensionsCheckbox.checked) {
         const extensionAmount = extensionAmountSelect.value;
         const tailLengthInches = tailLengthKey ? parseInt(tailLengthKey) : 0;
         
-        // Check if this is a minimal case (normal hair + tail ≤3 inches + little extensions)
-        const isNormalHair = hairLength === 'normalForBraids';
-        const isShortTail = tailLengthInches <= 3;
-        const isMinimalExtensions = extensionAmount === 'little';
+        // Calculate extension cost using settings
+        let extensionCost = cornrowsSettings.extensionCost;
         
-        if (isNormalHair && isShortTail && isMinimalExtensions) {
-            // Minimal cost for volume-only extensions (configurable)
-            labor += cornrowsConfig.minimalExtensionCost;
-            breakdown += `<p>${translate('bd_cornrowsMinimalExtensions')}: €${cornrowsConfig.minimalExtensionCost.toFixed(2)} (${translate('bd_volumeOnly')})</p>`;
-        } else {
-            // Apply configurable extension factors
-            const extensionResult = calculateCornrowsExtensionFactors(extensionAmount, rows, tailLengthInches);
-            labor += extensionResult.cost;
-            time += extensionResult.time;
-            breakdown += extensionResult.breakdown;
+        // Apply ratio curve based on number of rows if enabled
+        if (cornrowsSettings.enableExtensionRatio && rows > 1) {
+            const ratioPower = Math.pow(cornrowsSettings.extensionRatioCurve, rows - 1);
+            extensionCost = cornrowsSettings.extensionCost * ratioPower;
         }
+        
+        // Apply extension amount multiplier
+        const extensionMultipliers = { little: 0.5, normal: 1.0, aLot: 1.5 };
+        extensionCost *= extensionMultipliers[extensionAmount] || 1.0;
+        
+        labor += extensionCost;
+        breakdown += `<p>${translate('bd_cornrowsExtensions')} (${translate('ext_' + extensionAmount)}): €${extensionCost.toFixed(2)}</p>`;
     }
     
     return { labor, time, breakdown };
