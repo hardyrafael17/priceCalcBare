@@ -155,8 +155,8 @@ export const cornrowsConfig = {
     // Short hair surcharge (flat fee)
     shortHairSurcharge: 10,
     
-    // Minimal extension cost (when hair is normal, tail ≤3 inches, little extensions)
-    minimalExtensionCost: 7,
+    // Minimal extension cost (when hair is normal, tail ≤3 inches, little extensions) - reduced per request
+    minimalExtensionCost: 2,
     
     // Number of rows impact on time (easily configurable)
     rowTimeFactors: {
@@ -164,11 +164,11 @@ export const cornrowsConfig = {
         timeIncreasePerRow: 0.08  // 8% time increase per additional row above base
     },
     
-    // Extension costs for cornrows (easily configurable)
+    // Extension costs for cornrows (easily configurable) - kept very low per request
     extensionCosts: {
-        little: { baseCost: 5, baseTime: 0.5 },
-        normal: { baseCost: 10, baseTime: 1.0 },
-        aLot: { baseCost: 15, baseTime: 1.5 }
+        little: { baseCost: 2, baseTime: 0.3 },   // Very minimal cost
+        normal: { baseCost: 3, baseTime: 0.4 },   // Slightly more
+        aLot: { baseCost: 5, baseTime: 0.5 }      // Maximum 5 euros as requested
     },
     
     // Row complexity factors (easily configurable)

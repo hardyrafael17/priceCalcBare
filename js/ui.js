@@ -3,22 +3,7 @@ import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLength
 import { translate, setLanguage, updateAllText } from './translations.js';
 import { populateThemeDropdown } from './theme.js';
 import { calculatePrice } from './calculator.js';
-
-export function populateSelectWithOptions(selectElement, optionsObject) {
-    const currentVal = selectElement.value;
-    selectElement.innerHTML = '';
-    
-    for (const key in optionsObject) {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = translate(optionsObject[key].nameKey);
-        selectElement.appendChild(option);
-    }
-    
-    if (selectElement.querySelector(`option[value="${currentVal}"]`)) {
-        selectElement.value = currentVal;
-    }
-}
+import { populateSelectWithOptions } from './utils.js';
 
 export function populateLanguageDropdown() {
     const languageSelect = document.getElementById('languageSelect');

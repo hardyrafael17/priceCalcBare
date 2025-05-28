@@ -1,23 +1,7 @@
 // Price calculation logic
 import { braidStylesData, headCoverageOptions, extensionOptions, braidTailLengthOptions, cornrowsTailLengthOptions, hairKindOptions, hairDensityOptions, hairLengthOptions, HOURLY_RATE_FOR_EXTENSIONS_LABOR, fixedCosts, cornrowsConfig } from './data.js';
 import { translate } from './translations.js';
-import { calculateCornrowsTailCost, cornrowsBraidingConfig } from './utils.js';
-
-// Helper function to convert decimal hours to HH:MM format
-function formatTimeToHHMM(decimalHours) {
-    if (decimalHours === 0) return "0:00";
-    
-    const hours = Math.floor(decimalHours);
-    const minutes = Math.round((decimalHours - hours) * 60);
-    
-    // Handle cases where rounding might give 60 minutes
-    if (minutes === 60) {
-        return `${hours + 1}:00`;
-    }
-    
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    return `${hours}:${formattedMinutes}`;
-}
+import { calculateCornrowsTailCost, cornrowsBraidingConfig, calculateDynamicGirth, calculateCornrowsTailCostWithDynamicGirth, formatTimeToHHMM } from './utils.js';
 
 export function calculatePrice() {
     const braidStyleSelect = document.getElementById('braidStyle');
@@ -122,6 +106,7 @@ export function calculatePrice() {
 function calculateCornrowsCost(styleData, cornrowRowsInput) {
     const rows = parseInt(cornrowRowsInput.value) || 0;
     const hairLengthSelect = document.getElementById('hairLength');
+    const hairDensitySelect = document.getElementById('hairDensity');
     const braidTailLengthSelect = document.getElementById('braidTailLength');
     const needsExtensionsCheckbox = document.getElementById('needsExtensions');
     const extensionAmountSelect = document.getElementById('extensionAmount');
@@ -154,13 +139,10 @@ function calculateCornrowsCost(styleData, cornrowRowsInput) {
         const tailLengthInches = parseInt(tailLengthKey) || 0;
         
         if (tailLengthInches > 0) {
-            // Determine girth based on hair characteristics and style
-            let girthType = 'normal';
-            if (rows >= 8) {
-                girthType = 'thin';  // More rows = thinner braids
-            } else if (rows <= 3) {
-                girthType = 'thick'; // Fewer rows = thicker braids
-            }
+            // Calculate dynamic girth based on row count, extensions, and hair density
+            const extensionAmount = needsExtensionsCheckbox.checked ? extensionAmountSelect.value : null;
+            const hairDensity = hairDensitySelect.value;
+            const dynamicGirth = calculateDynamicGirth(rows, extensionAmount, hairDensity);
             
             // Determine complexity based on tail length and row count
             let complexityType = 'normal';
@@ -172,13 +154,13 @@ function calculateCornrowsCost(styleData, cornrowRowsInput) {
                 complexityType = 'simple';
             }
             
-            // Use sophisticated girth-based algorithm for tail pricing
-            const tailResult = calculateCornrowsTailCost(rows, tailLengthInches, girthType, complexityType);
+            // Use sophisticated girth-based algorithm for tail pricing with dynamic girth
+            const tailResult = calculateCornrowsTailCostWithDynamicGirth(rows, tailLengthInches, dynamicGirth, complexityType);
             
             if (tailResult.price > 0) {
                 labor += tailResult.price;
                 time += tailResult.time;
-                breakdown += `<p>${translate('bd_braidTailLength')} (${tailLengthInches}" ${girthType}/${complexityType}): +€${tailResult.price.toFixed(2)}, +${formatTimeToHHMM(tailResult.time)}</p>`;
+                breakdown += `<p>${translate('bd_braidTailLength')} (${tailLengthInches}" girth:${dynamicGirth.toFixed(2)}"/${complexityType}): +€${tailResult.price.toFixed(2)}, +${formatTimeToHHMM(tailResult.time)}</p>`;
             }
         }
     }

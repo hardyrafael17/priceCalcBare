@@ -8,6 +8,47 @@ body {
     display: none; 
 }
 
+/* Large screen optimizations */
+@media (min-width: 1280px) {
+    /* Make headers more prominent on large screens */
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    /* Better spacing for form groups on large screens */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Enhanced price display area */
+    .sticky {
+        position: sticky;
+        top: 1rem;
+    }
+}
+
+/* Extra large screen optimizations (1920px+) */
+@media (min-width: 1536px) {
+    .container {
+        max-width: 90%;
+    }
+    
+    h1 {
+        font-size: 3rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* More generous spacing */
+    .xl\:gap-8 {
+        gap: 3rem;
+    }
+    
+    /* Enhanced card spacing */
+    .bg-white, .bg-indigo-50 {
+        padding: 2rem;
+    }
+}
+
 /* Minimalist dropdown styling */
 .control-select {
     padding: 0.4rem 0.8rem;
